@@ -1,8 +1,8 @@
 ---
 name: Feature Request
 about: 기능 개발 및 작업 이슈 템플릿
-title: '[Feature] '
-labels: 'feature'
+title: ''
+labels: ''
 assignees: ''
 
 ---
