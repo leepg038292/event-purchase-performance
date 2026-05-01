@@ -1,6 +1,6 @@
 ---
 name: Sub Issue
-about: 개인 작업 또는 세부 분리가 필요한 경우 사용
+about: 서브 이슈 생성용 - 상위 이슈 작업 세부 분리가 필요한 경우 사용
 title: '[Sub] '
 labels: 'sub-issue'
 assignees: ''
