@@ -1,6 +1,6 @@
 package com.eventpurchase.project.cart
 
-import com.eventpurchase.project.product.ProductQueryPort
+import com.eventpurchase.project.cart.ProductQueryPort
 import com.eventpurchase.project.shared.exception.CustomException
 import com.eventpurchase.project.shared.exception.ErrorCode
 import com.eventpurchase.project.user.UserValidationPort

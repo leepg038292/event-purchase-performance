@@ -22,6 +22,5 @@ dependencies {
     implementation(project(":shared"))
     implementation(project(":product:model"))
     implementation(project(":product:infrastructure"))
-    implementation(project(":cart:model"))  // ProductQueryAdapter 반환타입 ProductSummary
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 }

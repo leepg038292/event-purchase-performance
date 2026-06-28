@@ -22,5 +22,6 @@ dependencies {
     implementation(project(":shared"))
     implementation(project(":cart:model"))
     implementation(project(":cart:infrastructure"))
+    implementation(project(":product:infrastructure"))
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 }
