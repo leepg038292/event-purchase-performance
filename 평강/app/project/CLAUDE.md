@@ -12,17 +12,17 @@ application-api          ← Spring Boot 진입점 (@SpringBootApplication)
 shared                   ← CustomException, ErrorCode, 공통 응답 타입
 product/
   model                  ← 도메인 엔티티 (순수 Kotlin, 프레임워크 의존 없음)
-  infrastructure         ← 포트 인터페이스 (ProductRepository, ProductQueryPort)
+  infrastructure         ← 포트 인터페이스 (ProductRepository)
   service                ← 유스케이스 (ProductService)
   api                    ← REST 컨트롤러 (inbound adapter)
   repository-jpa         ← JPA 어댑터 (outbound adapter)
   schema                 ← JPA 엔티티 + SQL 마이그레이션
 cart/
   model                  ← 도메인 엔티티 + ProductSummary (cart가 자체 정의한 product 뷰)
-  infrastructure         ← 포트 인터페이스 (CartRepository, CartItemRepository)
+  infrastructure         ← 포트 인터페이스 (CartRepository, CartItemRepository, ProductQueryPort)
   service                ← 유스케이스 (CartService)
   api                    ← REST 컨트롤러
-  repository-jpa         ← JPA 어댑터
+  repository-jpa         ← JPA 어댑터 + ProductQueryAdapter (product:infrastructure 인터페이스만 의존)
   schema                 ← JPA 엔티티 + SQL 마이그레이션
 user/
   model                  ← 도메인 엔티티
@@ -57,11 +57,11 @@ group = if (project.path.contains(":")) "com.eventpurchase.$domain" else "com.ev
 + `archivesName.set(project.path.removePrefix(":").replace(":", "-"))`
 
 ### 2. cross-domain 어댑터 위치 재배치
-- `ProductQueryPort` → `product:infrastructure` (product가 제공하는 계약)
+- `ProductQueryPort` → `cart:infrastructure` (cart가 필요한 계약을 cart가 정의)
+- `ProductQueryAdapter` → `cart:repository-jpa` (product:infrastructure 인터페이스만 의존)
 - `UserValidationPort` → `user:infrastructure` (user가 제공하는 계약)
-- `ProductQueryAdapter` → `product:repository-jpa`
 - `UserValidationAdapter` → `user:repository-jpa`
-- `cart:repository-jpa`에서 cross-domain 의존성 제거
+- product 모듈은 cart 모듈을 전혀 모름 → 피처 간 단방향 의존 유지
 
 ### 3. Kotlin 스마트 캐스트 에러 (Kotlin 2.x)
 외부 모듈의 `val` 프로퍼티는 스마트 캐스트 불가.
@@ -93,21 +93,9 @@ implementation("org.jetbrains.kotlin:kotlin-reflect")
 
 ---
 
-## 내일 수정할 것 (아키텍처 개선)
+## 수정할 것 (아키텍처 개선)
 
-### 1순위: ProductQueryPort 위치 역방향 의존 수정
-현재 `product:infrastructure`의 `ProductQueryPort`가 `cart:model`의 `ProductSummary`를 반환.
-product 도메인이 cart 도메인 타입에 의존하는 역방향.
-
-```
-현재: cart:service → product:infrastructure(ProductQueryPort) → cart:model(ProductSummary)
-목표: cart:infrastructure(ProductQueryPort) ← product:repository-jpa(ProductQueryAdapter 구현)
-```
-
-`ProductQueryPort`를 `cart:infrastructure`로 이동하고,
-`product:repository-jpa`의 `ProductQueryAdapter`가 이를 구현하도록 변경.
-
-### 2순위: `infrastructure` 모듈 이름
+### 1순위: `infrastructure` 모듈 이름
 현재 `{domain}:infrastructure`가 포트(인터페이스)를 담고 있음.
 헥사고널에서 infrastructure는 어댑터 계층을 의미하므로 이름 혼란.
 → `{domain}:port` 또는 `{domain}:application-port`로 rename 검토.
