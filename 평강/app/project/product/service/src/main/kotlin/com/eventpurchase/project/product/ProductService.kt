@@ -1,7 +1,5 @@
 package com.eventpurchase.project.product
 
-import com.eventpurchase.project.shared.exception.CustomException
-import com.eventpurchase.project.shared.exception.ErrorCode
 import com.eventpurchase.project.shared.response.CursorResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,5 +24,6 @@ internal class ProductServiceImpl(
     }
 
     override fun getProductById(id: Long): Product =
-        productRepository.findById(id) ?: throw CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+        productRepository.findById(id) ?: throw ProductNotFoundException(id)
+
 }

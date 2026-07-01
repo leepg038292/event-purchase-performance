@@ -8,18 +8,21 @@ dependencies {
     implementation(project(":shared"))
     // product
     runtimeOnly(project(":product:model"))
+    implementation(project(":product:exception"))
     runtimeOnly(project(":product:infrastructure"))
     implementation(project(":product:api"))
     implementation(project(":product:repository-jpa"))
     implementation(project(":product:schema"))
     // cart
     runtimeOnly(project(":cart:model"))
+    implementation(project(":cart:exception"))
     runtimeOnly(project(":cart:infrastructure"))
     implementation(project(":cart:api"))
     implementation(project(":cart:repository-jpa"))
     implementation(project(":cart:schema"))
     // user
     runtimeOnly(project(":user:model"))
+    implementation(project(":user:exception"))
     runtimeOnly(project(":user:infrastructure"))
     implementation(project(":user:repository-jpa"))
     implementation(project(":user:schema"))

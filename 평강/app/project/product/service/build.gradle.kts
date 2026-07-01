@@ -10,6 +10,7 @@ dependencyManagement {
 dependencies {
     implementation(project(":shared"))
     implementation(project(":product:model"))
+    implementation(project(":product:exception"))
     implementation(project(":product:infrastructure"))
     implementation("org.springframework:spring-context")
     implementation("org.springframework:spring-tx")
