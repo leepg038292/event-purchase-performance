@@ -1,4 +1,4 @@
-package com.eventpurchase.project.cart
+package com.eventpurchase.project.shared
 
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.MappedSuperclass

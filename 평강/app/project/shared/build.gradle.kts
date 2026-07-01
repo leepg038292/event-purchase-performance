@@ -1,1 +1,11 @@
-// 순수 Kotlin - 프레임워크 의존 없음
+plugins {
+    id("io.spring.dependency-management")
+}
+
+dependencyManagement {
+    imports { mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.6") }
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+}

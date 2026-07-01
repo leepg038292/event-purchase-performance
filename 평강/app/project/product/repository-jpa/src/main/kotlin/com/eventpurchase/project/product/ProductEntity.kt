@@ -1,5 +1,6 @@
 package com.eventpurchase.project.product
 
+import com.eventpurchase.project.shared.BaseTimeEntity
 import jakarta.persistence.*
 import java.math.BigDecimal
 

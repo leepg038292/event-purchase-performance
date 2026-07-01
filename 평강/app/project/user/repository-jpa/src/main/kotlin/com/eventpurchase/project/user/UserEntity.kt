@@ -1,5 +1,6 @@
 package com.eventpurchase.project.user
 
+import com.eventpurchase.project.shared.BaseTimeEntity
 import jakarta.persistence.*
 
 @Entity
