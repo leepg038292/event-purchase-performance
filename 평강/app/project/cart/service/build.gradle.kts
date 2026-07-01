@@ -10,6 +10,7 @@ dependencyManagement {
 dependencies {
     implementation(project(":shared"))
     implementation(project(":cart:model"))
+    implementation(project(":cart:exception"))
     implementation(project(":cart:infrastructure"))
     implementation(project(":user:infrastructure"))      // UserValidationPort
     implementation("org.springframework:spring-context")

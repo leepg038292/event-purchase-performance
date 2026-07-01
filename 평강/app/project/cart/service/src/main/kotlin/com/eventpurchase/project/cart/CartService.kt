@@ -1,8 +1,7 @@
 package com.eventpurchase.project.cart
 
 import com.eventpurchase.project.cart.ProductQueryPort
-import com.eventpurchase.project.shared.exception.CustomException
-import com.eventpurchase.project.shared.exception.ErrorCode
+import com.eventpurchase.project.user.UserNotFoundException
 import com.eventpurchase.project.user.UserValidationPort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,7 +18,6 @@ interface CartService {
 @Transactional
 internal class CartServiceImpl(
     private val cartRepository: CartRepository,
-    private val cartItemRepository: CartItemRepository,
     private val productQueryPort: ProductQueryPort,
     private val userValidationPort: UserValidationPort
 ) : CartService {
@@ -27,46 +25,42 @@ internal class CartServiceImpl(
     @Transactional(readOnly = true)
     override fun getCart(userId: Long): CartView {
         val cart = cartRepository.findByUserId(userId) ?: cartRepository.create(userId)
-        return buildView(cart.id!!, cart.userId)
+        return buildView(cart)
     }
 
     override fun addItem(userId: Long, productId: Long, quantity: Int): CartView {
-        if (!userValidationPort.existsById(userId)) throw CustomException(ErrorCode.USER_NOT_FOUND)
-        productQueryPort.findById(productId) ?: throw CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+        if (!userValidationPort.existsById(userId)) throw UserNotFoundException(userId)
+        productQueryPort.findById(productId) ?: throw ProductNotAvailableException(productId)
 
         val cart = cartRepository.findByUserId(userId) ?: cartRepository.create(userId)
-        val cartId = cart.id!!
-        val existing = cartItemRepository.findByCartIdAndProductId(cartId, productId)
-        if (existing != null) cartItemRepository.save(existing.copy(quantity = existing.quantity + quantity))
-        else cartItemRepository.save(CartItem(cartId = cartId, productId = productId, quantity = quantity))
-
-        return buildView(cartId, cart.userId)
+        val updated = cartRepository.save(cart.addItem(productId, quantity))
+        return buildView(updated)
     }
 
     override fun updateItemQuantity(userId: Long, cartItemId: Long, quantity: Int): CartView {
-        val item = cartItemRepository.findById(cartItemId) ?: throw CustomException(ErrorCode.CART_ITEM_NOT_FOUND)
-        cartItemRepository.save(item.copy(quantity = quantity))
-        val cart = cartRepository.findByUserId(userId) ?: throw CustomException(ErrorCode.CART_ITEM_NOT_FOUND)
-        return buildView(cart.id!!, userId)
+        val cart = cartRepository.findByUserId(userId)
+            ?: throw CartItemNotFoundException(cartItemId)
+        val updated = cartRepository.save(cart.changeItemQuantity(cartItemId, quantity))
+        return buildView(updated)
     }
 
     override fun deleteItem(userId: Long, cartItemId: Long): CartView {
-        cartItemRepository.findById(cartItemId) ?: throw CustomException(ErrorCode.CART_ITEM_NOT_FOUND)
-        cartItemRepository.deleteById(cartItemId)
-        val cart = cartRepository.findByUserId(userId) ?: throw CustomException(ErrorCode.CART_ITEM_NOT_FOUND)
-        return buildView(cart.id!!, userId)
+        val cart = cartRepository.findByUserId(userId)
+            ?: throw CartItemNotFoundException(cartItemId)
+        val updated = cartRepository.save(cart.removeItem(cartItemId))
+        return buildView(updated)
     }
 
     override fun clearCart(userId: Long) {
         val cart = cartRepository.findByUserId(userId) ?: return
-        cartItemRepository.deleteAllByCartId(cart.id!!)
+        cartRepository.save(cart.clear())
     }
 
-    private fun buildView(cartId: Long, userId: Long): CartView {
-        val items = cartItemRepository.findAllByCartId(cartId).mapNotNull { item ->
+    private fun buildView(cart: Cart): CartView {
+        val items = cart.cartItems.mapNotNull { item ->
             val product = productQueryPort.findById(item.productId) ?: return@mapNotNull null
             CartItemView(cartItemId = item.id, quantity = item.quantity, product = product)
         }
-        return CartView(cartId = cartId, userId = userId, items = items)
+        return CartView(cartId = cart.id!!, userId = cart.userId, items = items)
     }
 }
