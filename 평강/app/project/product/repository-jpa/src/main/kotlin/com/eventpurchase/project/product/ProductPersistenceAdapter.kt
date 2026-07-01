@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 internal class ProductPersistenceAdapter(
     private val productJpaRepository: ProductJpaRepository
-) : ProductRepository {
+) : ProductRepository, ProductLookupPort {
 
     private fun pageable(size: Int) = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"))
 
@@ -17,4 +17,7 @@ internal class ProductPersistenceAdapter(
     override fun findByIdLessThan(lastId: Long, size: Int) = productJpaRepository.findByIdLessThan(lastId, pageable(size)).map { it.toDomain() }
     override fun count() = productJpaRepository.count()
     override fun saveAll(products: List<Product>) { productJpaRepository.saveAll(products.map { ProductEntity.from(it) }) }
+    override fun findSummaryById(id: Long) = productJpaRepository.findByIdOrNull(id)?.let {
+        ProductLookupResult(it.id!!, it.productName, it.brand, it.price, it.discountRate, it.imageUrl)
+    }
 }
